@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>一个小小的美食面板</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <script src="/js/jquery-1.12.3.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">美食管理系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/">欢迎光临</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li role="presentation"><a href="/">商品分类</a></li>
+                <li role="presentation"><a href="/list">商品列表</a></li>
+                <li role="presentation" class="active"><a href="/add">增加商品</a></li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <form action="/addList" method="post" enctype="multipart/form-data">
+                <p>
+                    所属分类：<select id="select" name="fenlei"></select>
+                </p>
+                <p>
+                    商品名称：<input type="text" id="name" name="name">
+                </p>
+                <p>
+                    商品价格：<input type="text" id="price" name="price">
+                </p>
+                <p>
+                    商品排序：<input type="text" id="sort" name="sort" readonly>
+                </p>
+                <p>
+                    商品图片：<input type="file" id="tupian" name="tupian">未选择任何文件
+                </p>
+                <p>
+                    商品内容：<textarea id="neirong" cols="30" rows="10" name="neirong"></textarea>
+                </p>
+                <p>
+                    状态：已审核：<input type="radio" name="zhuangtai">未审核：<input type="radio" name="zhuangtai">
+                </p>
+                <p>
+                    <input type="checkbox" name="jingpin" value="精品">精品
+                    <input type="checkbox" name="rexiao" value="热销">热销
+                </p>
+                <p>
+                    <button type="submit" id="Abtn" style="background: #0a6999;color: #fff">提交</button>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    //获取所有分类
+    $.get("/gainsort",function (data) {
+        $.each(data.result,function (i,n) {
+            $option = $("<option></option>").html(n.sort).appendTo($('#select'));
+        })
+    });
+    //排序
+    $.get("/gainlist", function (data) {
+        $('input[name=sort]').val(data.result.length+1)
+    })
+    // $.post("/addList",function (data) {
+    //     if(data.result==1){
+    //         alert("添加成功")
+    //     }else{
+    //         alert("添加失败")
+    //     }
+    // })
+</script>
+</body>
+</html>

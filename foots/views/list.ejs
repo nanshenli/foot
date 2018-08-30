@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>一个小小的美食面板</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <script src="/js/jquery-1.12.3.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <style>
+        #tbody img{
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">美食管理系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/">欢迎光临</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li role="presentation"><a href="/">商品分类</a></li>
+                <li role="presentation" class="active"><a href="/list">商品列表</a></li>
+                <li role="presentation"><a href="/add">增加商品</a></li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 style="background: rgba(255,255,255,0.5); border-radius: 10px;  padding: 5px 10px; color: black!important;">商品列表页面</h1>
+            <form id="formO">
+                <select name="fenlei" id="select">
+                    <option value="请选择类型">请选择类型</option>
+                </select>
+                <select name="name" id="select2">
+                    <option value="请选择类型">请选择菜品</option>
+                </select>
+                <input type="button" id="SouSuo" value="提交">
+            </form>
+            <div style="margin-top: 20px">
+                <table class="table table-bordered" style="text-align: center" id="ta">
+                    <thead>
+                    <tr>
+                        <td>菜品</td>
+                        <td>分类</td>
+                        <td>价格</td>
+                        <td>状态</td>
+                        <td>推荐</td>
+                        <td>热销</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            <!--修改模态框-->
+            <div class="modal fade" id="xiugai" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="width: 70%;">
+                                <form id="gai">
+
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary update">提交</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //搜索
+    $.get("/gainsort",function (data) {
+        $.each(data.result,function (i,n) {
+            $option = $("<option></option>").html(n.sort).appendTo($('#select'));
+        })
+    });
+    $('#select').change(function () {
+        _this = $(this).val()
+        $("#select2").html(' ')
+        $('<option value="请选择类型">请选择菜品</option>').appendTo($("#select2"))
+        $.get("/gainlist/", function (data) {
+            $.each(data.result, function (i, n) {
+                if (_this == n.fenlei) {
+                    $('<option value=' + n.name + '>' + n.name + '</option>').appendTo($("#select2"))
+                }
+            })
+        })
+        $.get("/readlist", function (data) {
+            $('input[name=paixu]').val(data.s.length+1)
+        })
+    })
+    $("#SouSuo").click(function () {
+        var str = $("#formO").serialize()
+        var val =$("#select2").val()
+        $.post("/search", str, function (data) {
+            $.each(data.result, function (i, n) {
+                if (val == n.name) {
+                    $("#tbody").html(' ')
+                    f(n)
+                }
+            })
+        })
+    })
+
+    //获取所有分类
+    $.get("/gainlist",function (data) {
+        var jingpin = '';
+        var rexiao = '';
+        var zhuangtai = '';
+        $.each(data.result,function (i,n) {
+            // $tr = $("<tr></tr>");
+            // $("<td></td>").html(n.name+'<br><img src="'+n.tupian+'.jpg" alt="">').appendTo($tr);
+            // $("<td></td>").html(n.fenlei).appendTo($tr);
+            // $("<td></td>").html(n.price).appendTo($tr);
+            // // $("<td></td>").html(n.sort).appendTo($tr);
+            // // $("<td></td>").html(n.neirong).appendTo($tr);
+            // // $("<td></td>").html(n.zhuangtai).appendTo($tr);
+            // // $("<td></td>").html(n.jingpin).appendTo($tr);
+            // // $("<td></td>").html(n.rexiao).appendTo($tr);
+            // $("<td></td>").html('<input type="button" value="删除" id="delete" data-sort="'+n._id+'"><input type="button" class="aaa" value="修改" data-toggle="modal" data-target="#xiugai" data-sort="'+n._id+'">').appendTo($tr);
+            // $tr.appendTo($("#tbody"));
+            f(n)
+        })
+    })
+
+    function f(n) {
+        if (!n.jingpin) {
+            jingpin = "<span style='color: red'>✘</span>"
+        } else {
+            jingpin = "<span style='color: blue'>✔</span>"
+        }
+        if (!n.rexiao) {
+            rexiao = "<span style='color: red'>✘</span>"
+        } else {
+            rexiao = "<span style='color: blue'>✔</span>"
+        }
+        if (n.zhuangtai == -1 || !n.zhuangtai) {
+            tai = "<span style='color: red'>✘</span>"
+        } else {
+            tai = "<span style='color: blue'>✔</span>"
+        }
+        $tr = $("<tr></tr>");
+        $("<td></td>").html('<span>' + n.name + '</span><div><img src="' + n.tupian + '.jpg" alt=""></div>').appendTo($tr);
+        $("<td></td>").html(n.fenlei).appendTo($tr);
+        $("<td></td>").html(n.price).appendTo($tr);
+        $("<td></td>").html(jingpin).appendTo($tr);
+        $("<td></td>").html(rexiao).appendTo($tr);
+        // $("<td></td>").html(tai).appendTo($tr);
+        $("<td></td>").html('<input type="button" value="删除" id="delete" data-sort="'+n._id+'"><input type="button" class="aaa" value="修改" data-toggle="modal" data-target="#xiugai" data-sort="'+n._id+'">').appendTo($tr)
+        $tr.appendTo($("#tbody"));
+    }
+
+
+
+    //删除商品
+    $('#tbody').delegate("#delete", "click", function () {
+        if(!confirm("确定删除吗")){
+            return;
+        }
+        var id = $(this).attr("data-sort");
+        var $this = $(this);
+        $.ajax({
+            url : "/deleteList/" + id,
+            type : "delete",
+            success : function(data){
+                if(data.result == 1){
+                    alert("删除成功");
+                    $this.parents("tr").remove();
+                }else{
+                    alert("服务器错误！");
+                }
+            }
+        });
+    })
+
+    //修改
+    $("#tbody").delegate('.aaa','click',function () {
+        $('#gai').html('')
+        var id=$(this).attr("data-sort");
+        $.ajax({
+            url : "/Alterlist/" + id,
+            type : "get",
+            success : function(data){
+                if(data.result == -1){
+                    alert("服务器错误");
+                }else{
+                    $('<form></form>').html('<p><span>菜品名称：</span><input type="text" name="name" value="'+data.result.name+'" id="aa" data-id="'+data.result._id+'"></p>'+'<p><span>价格：</span><input type="text" name="price" value="'+data.result.price+'" id="price" data-id="'+data.result._id+'"></p>').appendTo($('#gai'))
+
+                }
+            }
+        });
+    })
+
+    // 修改  提交
+    $(".update").click(function () {
+        var id = $("#aa").attr("data-id");
+        var str =$("#xiugai").serialize();
+        $.post("/updatelist/"+id,{'name':$("#aa").val(),'price':$("#price").val()},function (data) {
+            if (data.result==1){
+                alert("修改成功");
+                window.location='/list'
+            }
+            if (data.result==-1){
+                alert("服务器错误")
+            }
+        })
+    })
+</script>
+</body>
+</html>

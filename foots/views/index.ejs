@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>一个小小的美食面板</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <script src="/js/jquery-1.12.3.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">美食管理系统</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/">欢迎光临</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li role="presentation" class="active" ><a href="/">商品分类</a></li>
+                <li role="presentation"><a href="/list">商品列表</a></li>
+                <li role="presentation"><a href="/add">增加商品</a></li>
+            </ul>
+        </div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 style="background: rgba(255,255,255,0.5); border-radius: 10px;  padding: 5px 10px; color: black!important;">商品分类页面</h1>
+            <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#chuangjian">
+                增加
+            </button>
+            <section class="grid col-lg-offset-1" style="width:850px;">
+
+                <table class="table table-bordered" style="text-align: center">
+                    <thead>
+                    <tr>
+                        <td>分类名称</td>
+                        <td>状态</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </section>
+            <!--增加-->
+            <div class="modal fade" id="chuangjian" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="width: 70%;">
+                                <form id="zengjia">
+                                    <p>
+                                        <span>分类名称：</span><br>
+                                        <input type="text" name="sort">
+                                    </p>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" id="Addbtn">提交</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--修改-->
+            <div class="modal fade" id="xiugai" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div style="width: 70%;">
+                                <form id="gai">
+
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary update">提交</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //获取所有分类
+    $.get("/gainsort",function (data) {
+        $.each(data.result,function (i,n) {
+            $tr = $("<tr></tr>");
+            $("<td></td>").html(n.sort).appendTo($tr);
+            $("<td></td>").html("√").appendTo($tr);
+            $("<td></td>").html('<input type="button" value="删除" id="delete" data-sort="'+n._id+'"><input type="button" class="aaa" value="修改" data-toggle="modal" data-target="#xiugai" data-sort="'+n._id+'">').appendTo($tr);
+            $tr.appendTo($("#tbody"));
+        })
+    })
+
+    //添加美食分类
+    $("#Addbtn").click(function () {
+        var str =$("#zengjia").serialize();
+        $.post("/addsort",str,function (data) {
+            if (data.result == 1) {
+                alert('添加成功')
+                window.location='/'
+                $('input[type=text]').val(' ')
+            }
+            if (data.result == -1) {
+                alert("服务器错误")
+            }
+            if (data.result == -2) {
+                alert("类别已存在")
+                $('input[type=text]').val(' ')
+            }
+        })
+    })
+
+    //删除美食分类
+    $('#tbody').delegate("#delete", "click", function () {
+        if(!confirm("确定删除吗")){
+            return;
+        }
+        var id = $(this).attr("data-sort");
+        console.log(id)
+        var $this = $(this);
+        $.ajax({
+            url : "/sortDelete/" + id,
+            type : "delete",
+            success : function(data){
+                if(data.result == 1){
+                    alert("删除成功");
+                    $this.parents("tr").remove();
+                }else{
+                    alert("服务器错误！");
+                }
+            }
+        });
+    })
+
+    //修改
+    $("#tbody").delegate('.aaa','click',function () {
+        $('#gai').html('')
+        var id=$(this).attr("data-sort");
+        $.ajax({
+            url : "/Altercar/" + id,
+            type : "get",
+            success : function(data){
+                if(data.result == -1){
+                    alert("服务器错误");
+                }else{
+                    $('<form></form>').html('<p><span>类名：</span><input type="text" name="sort" value="'+data.result.sort+'" id="aa" data-id="'+data.result._id+'"></p>').appendTo($('#gai'))
+
+                }
+            }
+        });
+    })
+
+
+    // 修改  提交
+    $(".update").click(function () {
+        var id = $("#aa").attr("data-id");
+        console.log(id)
+        var str =$("#xiugai").serialize();
+        $.post("/updatecar/"+id,{'sort':$("#aa").val()},function (data) {
+            if (data.result==1){
+                alert("修改成功");
+                window.location='/'
+            }
+            if (data.result==-1){
+                alert("服务器错误")
+            }
+        })
+    })
+</script>
+</body>
+</html>
